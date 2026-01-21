@@ -1,6 +1,7 @@
 package net.violetunderscore.netherrun.mixin;
 
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameMode;
@@ -22,6 +23,7 @@ public abstract class PlayerEntityMixin {
             self.changeGameMode(GameMode.SPECTATOR);
             ci.cancel();
             self.closeHandledScreen();
+            NetherRun.getGame().endRound();
         }
     }
 
@@ -29,11 +31,10 @@ public abstract class PlayerEntityMixin {
     public void damage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         ServerPlayerEntity self = (ServerPlayerEntity)(Object)this;
 
-        if (
-         NetherRun.getGame().isPlayingPlayer(self.getUuid())
-         && !(self.getUuid().equals(NetherRun.getGame().runningPlayer().getUuid()))
-        ){
-            cir.setReturnValue(false);
+        if (NetherRun.getGame().isPlayingPlayer(self.getUuid())) {
+            if (!(self.getUuid().equals(NetherRun.getGame().runningPlayer().getUuid()))) {
+                cir.setReturnValue(false);
+            }
         }
     }
 }

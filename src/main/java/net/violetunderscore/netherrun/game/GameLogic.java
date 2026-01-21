@@ -38,6 +38,7 @@ public class GameLogic {
 
     private Set<UUID> readyPlayers = new HashSet<>();
     private Map<UUID, Integer> teleporting = new HashMap<>();
+    private Map<UUID, BlockPos> teleportingPos = new HashMap<>();
 
     private boolean balanced = true;
 
@@ -46,6 +47,7 @@ public class GameLogic {
     }
 
     public void tickMaster() {
+        checkSpawnTimers();
         if (gameActive) {
             if (roundActive) {
                 tickRound();
@@ -56,7 +58,16 @@ public class GameLogic {
         if (preGameTimer > 0) {
             preGameTimer--;
             if (preGameTimer == 0) {
-                spawnPlayer((ServerPlayerEntity) runningPlayer(), runningPlayer().getBlockPos());
+                ServerPlayerEntity rp = (ServerPlayerEntity)runningPlayer();
+                BlockPos pos = runningPlayer().getBlockPos();
+                spawnPlayer(rp, pos);
+                for (UUID uuid : playingPlayers()) {
+                    ServerPlayerEntity p = server.getPlayerManager().getPlayer(uuid);
+                    if (p != null && p != rp) {
+                        p.teleport(pos.getX(), pos.getY(), pos.getZ(), false);
+                        spawnPlayerIn(uuid, pos, TimeConvert.secondToTick(5));
+                    }
+                }
             }
         } else if (teamOnePlayers.contains(runningPlayer().getUuid())) {
             teamOneScore++;
@@ -82,10 +93,29 @@ public class GameLogic {
         p.setVelocity(Vec3d.ZERO);
         p.changeGameMode(GameMode.SURVIVAL);
     }
+    public void spawnPlayerIn(UUID uuid, BlockPos pos, int i) {
+        teleporting.put(uuid, i);
+        teleportingPos.put(uuid, pos);
+    }
+    public void checkSpawnTimers() {
+        for (UUID uuid : teleporting.keySet()) {
+            if (teleportingPos.containsKey(uuid)) {
+                if (teleporting.get(uuid) <= 0) {
+                    ServerPlayerEntity p = server.getPlayerManager().getPlayer(uuid);
+                    if (p != null) {
+                        spawnPlayer(p, teleportingPos.get(uuid));
+                        teleporting.remove(uuid);
+                        teleportingPos.remove(uuid);
+                    }
+                } else {
+                    teleporting.put(uuid, teleporting.get(uuid) - 1);
+                }
+            }
+        }
+    }
 
     public int startGame() {
         if (gameActive) {
-            server.getPlayerManager().broadcast(Text.literal("NETHERRUN has already started"), false);
             return 0;
         }
         if (teamOnePlayers.isEmpty()
@@ -98,7 +128,7 @@ public class GameLogic {
         turn = 1;
         teamOneScore = 0;
         teamTwoScore = 0;
-        server.getPlayerManager().broadcast(Text.literal("Starting NETHERRUN"), false);
+        server.getPlayerManager().broadcast(Text.translatable("cmd.netherrun.start.success"), false);
         return 1;
     }
     public void startRound(boolean forced) {
@@ -112,6 +142,13 @@ public class GameLogic {
                 int spawnZ = new Random().nextInt(20000) - 10000;
                 sp.teleport(server.getWorld(World.NETHER), spawnX, 100, spawnZ, Set.of(), 0, 0, true);
                 sp.changeGameMode(GameMode.SPECTATOR);
+                for (UUID uuid : playingPlayers()) {
+                    ServerPlayerEntity p = server.getPlayerManager().getPlayer(uuid);
+                    if (p != null && p != sp) {
+                        p.teleport(spawnX, 100, spawnZ, false);
+                        p.changeGameMode(GameMode.SPECTATOR);
+                    }
+                }
             } else {
                 server.getPlayerManager().broadcast(Text.translatable("msg.netherrun.roundstart.nullplayer"), false);
             }

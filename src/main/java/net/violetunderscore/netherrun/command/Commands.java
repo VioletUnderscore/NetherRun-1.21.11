@@ -35,7 +35,6 @@ public class Commands {
                             context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.start.empty_team"), false);
                             break;
                         case 1:
-                            context.getSource().getServer().getPlayerManager().broadcast(Text.translatable("cmd.netherrun.start.success"), false);
                             break;
                     }
                     return 1;
