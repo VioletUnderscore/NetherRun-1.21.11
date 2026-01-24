@@ -10,5 +10,7 @@
   "msg.netherrun.tie": "Both teams have IDENTICAL scores, continuing game",
   "msg.netherrun.roundstart.success": "Starting the round...",
   "msg.netherrun.roundstart.unready": "One or more players are not ready to start...",
-  "msg.netherrun.roundstart.nullplayer": "Could not find the runner (null)"
+  "msg.netherrun.roundstart.nullplayer": "Could not find the runner (null)",
+  "cmd.netherrun.end.success": "Stopping netherrun game...",
+  "cmd.netherrun.end.stopped": "NetherRun has not even started yet"
 }

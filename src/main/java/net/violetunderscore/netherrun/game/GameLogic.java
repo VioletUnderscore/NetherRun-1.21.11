@@ -11,6 +11,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import net.violetunderscore.netherrun.math.TimeConvert;
+import net.violetunderscore.netherrun.network.NetherrunNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,6 +130,7 @@ public class GameLogic {
         teamOneScore = 0;
         teamTwoScore = 0;
         server.getPlayerManager().broadcast(Text.translatable("cmd.netherrun.start.success"), false);
+        NetherrunNetwork.ToggleBoardForAll(gameActive, server);
         return 1;
     }
     public void startRound(boolean forced) {
@@ -185,6 +187,22 @@ public class GameLogic {
             }
             round++;
         } else { turn++; }
+    }
+    public int endGame(boolean silent) {
+        if (!gameActive) {
+            return 0;
+        }
+        gameActive = false;
+        roundActive = false;
+        round = 1;
+        turn = 1;
+        teamOneScore = 0;
+        teamTwoScore = 0;
+        if (!silent) {
+            server.getPlayerManager().broadcast(Text.translatable("cmd.netherrun.end.success"), false);
+        }
+        NetherrunNetwork.ToggleBoardForAll(gameActive, server);
+        return 1;
     }
 
     private Set<UUID> playingPlayers() {
@@ -255,5 +273,9 @@ public class GameLogic {
     public void leaveGame(UUID uuid) {
         teamOnePlayers.remove(uuid);
         teamTwoPlayers.remove(uuid);
+    }
+
+    public boolean active() {
+        return gameActive;
     }
 }

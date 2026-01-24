@@ -41,6 +41,20 @@ public class Commands {
                 })
             )
 
+            .then(CommandManager.literal("stop")
+                .executes(context -> {
+                    int result = NetherRun.getGame().endGame(false);
+                    switch (result) {
+                        case 0:
+                            context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.end.stopped"), false);
+                            break;
+                        case 1:
+                            break;
+                    }
+                    return 1;
+                })
+            )
+
             .then(CommandManager.literal("joinTeam")
                 .then(CommandManager.argument("teamNumber", IntegerArgumentType.integer())
                     .executes(context -> {
