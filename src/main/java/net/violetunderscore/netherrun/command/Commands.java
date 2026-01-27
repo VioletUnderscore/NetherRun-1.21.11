@@ -29,10 +29,10 @@ public class Commands {
                     int result = NetherRun.getGame().startGame();
                     switch (result) {
                         case 0:
-                            context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.start.started"), false);
+                            context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.start.started").withColor(0xFF7777), false);
                             break;
                         case 2:
-                            context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.start.empty_team"), false);
+                            context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.start.empty_team").withColor(0xFF7777), false);
                             break;
                         case 1:
                             break;
@@ -46,7 +46,7 @@ public class Commands {
                     int result = NetherRun.getGame().endGame(false);
                     switch (result) {
                         case 0:
-                            context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.end.stopped"), false);
+                            context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.end.stopped").withColor(0xFF7777), false);
                             break;
                         case 1:
                             break;
@@ -63,7 +63,7 @@ public class Commands {
                             int result = NetherRun.getGame().joinGame(context.getSource().getPlayer().getUuid(), team);
                             switch (result) {
                                 case 0:
-                                    context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.join.invalid", team), false);
+                                    context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.join.invalid", team).withColor(0xFF7777), false);
                                     break;
                                 case 1:
                                     context.getSource().getServer().getPlayerManager().broadcast(Text.translatable("cmd.netherrun.join.success", context.getSource().getPlayer().getDisplayName(), team), false);
@@ -74,6 +74,33 @@ public class Commands {
                         }
                         return 1;
                     })
+                )
+            )
+
+            .then(CommandManager.literal("setTarget")
+                .then(CommandManager.argument("score", IntegerArgumentType.integer())
+                    .executes(context -> {
+                        int score = IntegerArgumentType.getInteger(context, "score");
+                        NetherRun.getGame().setTarget(score);
+                        context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.set_target", score), false);
+                        return 1;
+                    })
+                    .then(CommandManager.argument("team", IntegerArgumentType.integer())
+                        .executes(context -> {
+                            int score = IntegerArgumentType.getInteger(context, "score");
+                            int team = IntegerArgumentType.getInteger(context, "team");
+                            int result = NetherRun.getGame().setTarget(score, team);
+                            switch (result) {
+                                case 1:
+                                    context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.set_team_target", score, team), false);
+                                    break;
+                                case 0:
+                                    context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.set_team_target.invalid", team).withColor(0xFF7777), false);
+                                    break;
+                            }
+                            return 1;
+                        })
+                    )
                 )
             )
 

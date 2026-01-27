@@ -72,8 +72,14 @@ public class GameLogic {
             }
         } else if (teamOnePlayers.contains(runningPlayer().getUuid())) {
             teamOneScore++;
+            if (teamOneScore % 20 == 0) {
+                NetherrunNetwork.UpdateOneScoreForAll(teamOneScore, 1, server);
+            }
         } else if (teamTwoPlayers.contains(runningPlayer().getUuid())) {
             teamTwoScore++;
+            if (teamTwoScore % 20 == 0) {
+                NetherrunNetwork.UpdateOneScoreForAll(teamTwoScore, 2, server);
+            }
         }
     }
 
@@ -131,6 +137,7 @@ public class GameLogic {
         teamTwoScore = 0;
         server.getPlayerManager().broadcast(Text.translatable("cmd.netherrun.start.success"), false);
         NetherrunNetwork.ToggleBoardForAll(gameActive, server);
+        NetherrunNetwork.UpdateScoresForAll(teamOneScore, teamTwoScore, targetScoreOne, server);
         return 1;
     }
     public void startRound(boolean forced) {
@@ -147,7 +154,7 @@ public class GameLogic {
                 for (UUID uuid : playingPlayers()) {
                     ServerPlayerEntity p = server.getPlayerManager().getPlayer(uuid);
                     if (p != null && p != sp) {
-                        p.teleport(spawnX, 100, spawnZ, false);
+                        p.teleport(server.getWorld(World.NETHER), spawnX, 100, spawnZ, Set.of(), 0, 0, true);
                         p.changeGameMode(GameMode.SPECTATOR);
                     }
                 }
@@ -253,6 +260,7 @@ public class GameLogic {
             }
         }
         server.getPlayerManager().broadcast(Text.translatable("msg.netherrun.win", winningTeam), false);
+        endGame(true);
         return true;
     }
 
@@ -273,6 +281,27 @@ public class GameLogic {
     public void leaveGame(UUID uuid) {
         teamOnePlayers.remove(uuid);
         teamTwoPlayers.remove(uuid);
+    }
+    public void onJoinServer(ServerPlayerEntity p) {
+        NetherrunNetwork.ToggleBoard(active(), p);
+        NetherrunNetwork.UpdateScores(teamOneScore, teamTwoScore, targetScoreOne, p);
+    }
+
+    public void setTarget(int time) {
+        targetScoreOne = time;
+        targetScoreTwo = time;
+    }
+    public int setTarget(int time, int team) {
+        switch (team) {
+            case 1:
+                targetScoreOne = time;
+                return 1;
+            case 2:
+                targetScoreTwo = time;
+                return 1;
+            default:
+                return 0;
+        }
     }
 
     public boolean active() {

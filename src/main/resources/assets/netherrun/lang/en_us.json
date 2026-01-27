@@ -1,16 +1,25 @@
 {
   "cmd.netherrun.join.success": "%s has joined team %s",
-  "cmd.netherrun.join.invalid": "There is no team",
+  "cmd.netherrun.join.invalid": "There is no team %s",
 
   "cmd.netherrun.mustbeplayer": "This command can only be executed by a player",
   "cmd.netherrun.start.started": "NetherRun has already started",
   "cmd.netherrun.start.empty_team": "One or more teams is empty",
   "cmd.netherrun.start.success": "Starting NetherRun...",
+
+
+
   "msg.netherrun.win": "Team %s has won the game!",
   "msg.netherrun.tie": "Both teams have IDENTICAL scores, continuing game",
+
   "msg.netherrun.roundstart.success": "Starting the round...",
   "msg.netherrun.roundstart.unready": "One or more players are not ready to start...",
   "msg.netherrun.roundstart.nullplayer": "Could not find the runner (null)",
+
   "cmd.netherrun.end.success": "Stopping netherrun game...",
-  "cmd.netherrun.end.stopped": "NetherRun has not even started yet"
+  "cmd.netherrun.end.stopped": "NetherRun has not even started yet",
+
+  "cmd.netherrun.set_target": "Target score set to %s",
+  "cmd.netherrun.set_team_target": "Target score set to %s for team %s",
+  "cmd.netherrun.set_team_target.invalid": "Could not set score for team %s - is there even such a team?"
 }

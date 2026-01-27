@@ -9,6 +9,8 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.violetunderscore.netherrun.command.Commands;
 import net.violetunderscore.netherrun.game.GameLogic;
 import net.violetunderscore.netherrun.network.NetherrunNetwork;
+import net.violetunderscore.netherrun.network.payloads.AllTimersPayload;
+import net.violetunderscore.netherrun.network.payloads.OneTimerPayload;
 import net.violetunderscore.netherrun.network.payloads.ToggleBoardPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,8 @@ public class NetherRun implements ModInitializer {
 		LOGGER.info("Loading Netherrun");
 
         PayloadTypeRegistry.playS2C().register(ToggleBoardPayload.ID, ToggleBoardPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(AllTimersPayload.ID, AllTimersPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(OneTimerPayload.ID, OneTimerPayload.CODEC);
 
         Commands.registerCommands();
 
@@ -35,7 +39,7 @@ public class NetherRun implements ModInitializer {
             game.tickMaster();
         });
         ServerPlayerEvents.JOIN.register(p -> {
-            NetherrunNetwork.ToggleBoard(game.active(), p);
+            game.onJoinServer(p);
         });
 	}
 

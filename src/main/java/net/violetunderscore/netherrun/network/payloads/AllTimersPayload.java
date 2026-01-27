@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 
 public record AllTimersPayload(int team1, int team2, int max) implements CustomPayload {
     public static final Id<AllTimersPayload> ID =
-            new Id<>(Identifier.of("netherrun", "toggle_board"));
+            new Id<>(Identifier.of("netherrun", "update_scores"));
 
     public static final PacketCodec<RegistryByteBuf, AllTimersPayload> CODEC =
             PacketCodec.tuple(
