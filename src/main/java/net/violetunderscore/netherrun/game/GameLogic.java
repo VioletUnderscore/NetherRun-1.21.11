@@ -2,6 +2,7 @@ package net.violetunderscore.netherrun.game;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -29,6 +30,7 @@ public class GameLogic {
     private int round = 1;
     private int turn = 1;
     private int preGameTimer = 0;
+    private int currentRoundTime = 0;
 
     private Set<UUID> teamOnePlayers = new HashSet<>();
     private int teamOneScore = 0;
@@ -56,6 +58,8 @@ public class GameLogic {
         }
     }
     public void tickRound() {
+        tickRoundEachPlayer();
+
         if (preGameTimer > 0) {
             preGameTimer--;
             if (preGameTimer == 0) {
@@ -72,13 +76,28 @@ public class GameLogic {
             }
         } else if (teamOnePlayers.contains(runningPlayer().getUuid())) {
             teamOneScore++;
+            currentRoundTime++;
             if (teamOneScore % 20 == 0) {
                 NetherrunNetwork.UpdateOneScoreForAll(teamOneScore, 1, server);
             }
         } else if (teamTwoPlayers.contains(runningPlayer().getUuid())) {
             teamTwoScore++;
+            currentRoundTime++;
             if (teamTwoScore % 20 == 0) {
                 NetherrunNetwork.UpdateOneScoreForAll(teamTwoScore, 2, server);
+            }
+        }
+    }
+
+    public void tickRoundEachPlayer() {
+        ServerPlayerEntity rp = (ServerPlayerEntity)runningPlayer();
+        if (currentRoundTime <= TimeConvert.minuteToTick(2)) {
+            rp.heal(0.025f);
+        }
+        for (UUID uuid : playingPlayers()) {
+            ServerPlayerEntity p = server.getPlayerManager().getPlayer(uuid);
+            if (p != null) {
+                p.getHungerManager().setFoodLevel(16);
             }
         }
     }
@@ -98,6 +117,8 @@ public class GameLogic {
         }
         p.teleport(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, true);
         p.setVelocity(Vec3d.ZERO);
+        p.velocityDirty = true;
+        p.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(p));
         p.changeGameMode(GameMode.SURVIVAL);
     }
     public void spawnPlayerIn(UUID uuid, BlockPos pos, int i) {
@@ -107,14 +128,19 @@ public class GameLogic {
     public void checkSpawnTimers() {
         for (UUID uuid : teleporting.keySet()) {
             if (teleportingPos.containsKey(uuid)) {
+                ServerPlayerEntity p = server.getPlayerManager().getPlayer(uuid);
                 if (teleporting.get(uuid) <= 0) {
-                    ServerPlayerEntity p = server.getPlayerManager().getPlayer(uuid);
                     if (p != null) {
                         spawnPlayer(p, teleportingPos.get(uuid));
                         teleporting.remove(uuid);
                         teleportingPos.remove(uuid);
                     }
                 } else {
+                    if (teleporting.get(uuid) % 20 == 0) {
+                        if (p != null) {
+                            p.sendMessage(Text.translatable("msg.netherrun.spawning", TimeConvert.tickToSecond(teleporting.get(uuid))), true);
+                        }
+                    }
                     teleporting.put(uuid, teleporting.get(uuid) - 1);
                 }
             }
@@ -146,6 +172,7 @@ public class GameLogic {
                 ServerPlayerEntity sp = (ServerPlayerEntity) runningPlayer();
                 roundActive = true;
                 preGameTimer = TimeConvert.secondToTick(15);
+                currentRoundTime = 0;
                 server.getPlayerManager().broadcast(Text.translatable("msg.netherrun.roundstart.success"), false);
                 int spawnX = new Random().nextInt(20000) - 10000;
                 int spawnZ = new Random().nextInt(20000) - 10000;

@@ -21,5 +21,6 @@
 
   "cmd.netherrun.set_target": "Target score set to %s",
   "cmd.netherrun.set_team_target": "Target score set to %s for team %s",
-  "cmd.netherrun.set_team_target.invalid": "Could not set score for team %s - is there even such a team?"
+  "cmd.netherrun.set_team_target.invalid": "Could not set score for team %s - is there even such a team?",
+  "msg.netherrun.spawning": "Spawning in %s seconds..."
 }

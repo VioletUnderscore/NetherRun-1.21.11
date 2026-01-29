@@ -7,6 +7,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.violetunderscore.netherrun.NetherRun;
+import net.violetunderscore.netherrun.math.TimeConvert;
 
 public class Commands {
     public static void registerCommands() {
@@ -111,10 +112,10 @@ public class Commands {
                         return 1;
                     })
                 )
-                .then(CommandManager.literal("spawnMeHere")
+                .then(CommandManager.literal("spawnMe")
                     .executes(context -> {
                         if (context.getSource().getPlayer() != null) {
-                            NetherRun.getGame().spawnPlayer(context.getSource().getPlayer(), context.getSource().getPlayer().getBlockPos());
+                            NetherRun.getGame().spawnPlayerIn(context.getSource().getPlayer().getUuid(), context.getSource().getPlayer().getBlockPos(), TimeConvert.secondToTick(15));
                         }
                         return 1;
                     })
