@@ -32,16 +32,16 @@ public class GameLogic {
     private int preGameTimer = 0;
     private int currentRoundTime = 0;
 
-    private Set<UUID> teamOnePlayers = new HashSet<>();
+    private final Set<UUID> teamOnePlayers = new HashSet<>();
     private int teamOneScore = 0;
     private int targetScoreOne = TimeConvert.minuteToTick(15);
-    private Set<UUID> teamTwoPlayers = new HashSet<>();
+    private final Set<UUID> teamTwoPlayers = new HashSet<>();
     private int teamTwoScore = 0;
     private int targetScoreTwo = TimeConvert.minuteToTick(15);
 
-    private Set<UUID> readyPlayers = new HashSet<>();
-    private Map<UUID, Integer> teleporting = new HashMap<>();
-    private Map<UUID, BlockPos> teleportingPos = new HashMap<>();
+    private final Set<UUID> readyPlayers = new HashSet<>();
+    private final Map<UUID, Integer> teleporting = new HashMap<>();
+    private final Map<UUID, BlockPos> teleportingPos = new HashMap<>();
 
     private boolean balanced = true;
 
@@ -91,8 +91,10 @@ public class GameLogic {
 
     public void tickRoundEachPlayer() {
         ServerPlayerEntity rp = (ServerPlayerEntity)runningPlayer();
-        if (currentRoundTime <= TimeConvert.minuteToTick(2)) {
-            rp.heal(0.025f);
+        if (currentRoundTime <= TimeConvert.minuteToTick(5)) {
+            rp.heal(0.02f);
+        } else {
+            rp.heal(0.01f);
         }
         for (UUID uuid : playingPlayers()) {
             ServerPlayerEntity p = server.getPlayerManager().getPlayer(uuid);
@@ -192,6 +194,18 @@ public class GameLogic {
             server.getPlayerManager().broadcast(Text.translatable("msg.netherrun.roundstart.unready"), false);
         }
     }
+    public int ready(UUID uuid) {
+        if (readyPlayers.contains(uuid)) {
+            readyPlayers.remove(uuid);
+            return 1;
+        } else {
+            readyPlayers.add(uuid);
+            if (allReady()) {
+                startRound(false);
+            }
+            return 0;
+        }
+    }
     private boolean allReady() {
         boolean result = true;
         for (UUID uuid : playingPlayers()) {
@@ -247,7 +261,7 @@ public class GameLogic {
     }
     public PlayerEntity runningPlayer() {
         UUID id = null;
-        if (balanced) {
+        if (!balanced) {
             if (turn > teamOnePlayers.size()) {
                 if (!teamTwoPlayers.isEmpty()) id = teamTwoPlayers.stream().toList().get(turn - teamOnePlayers.size() - 1);
             } else {

@@ -78,6 +78,25 @@ public class Commands {
                 )
             )
 
+            .then(CommandManager.literal("ready")
+                .executes(context -> {
+                    if (context.getSource().isExecutedByPlayer() && context.getSource().getPlayer() != null) {
+                        int result = NetherRun.getGame().ready(context.getSource().getPlayer().getUuid());
+                        switch (result) {
+                            case 0:
+                                context.getSource().getServer().getPlayerManager().broadcast(Text.translatable("cmd.netherrun.ready", context.getSource().getPlayer().getDisplayName()).withColor(0x00FF00), false);
+                                break;
+                            case 1:
+                                context.getSource().getServer().getPlayerManager().broadcast(Text.translatable("cmd.netherrun.unready", context.getSource().getPlayer().getDisplayName()).withColor(0x696969), false);
+                                break;
+                        }
+                    } else {
+                        context.getSource().sendFeedback(() -> Text.translatable("cmd.netherrun.mustbeplayer"), false);
+                    }
+                    return 1;
+                })
+            )
+
             .then(CommandManager.literal("setTarget")
                 .then(CommandManager.argument("score", IntegerArgumentType.integer())
                     .executes(context -> {
