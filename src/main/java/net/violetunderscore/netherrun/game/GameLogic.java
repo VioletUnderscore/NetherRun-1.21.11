@@ -3,7 +3,6 @@ package net.violetunderscore.netherrun.game;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -11,6 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
+import net.violetunderscore.netherrun.NetherRun;
 import net.violetunderscore.netherrun.math.TimeConvert;
 import net.violetunderscore.netherrun.network.NetherrunNetwork;
 import org.slf4j.Logger;
@@ -34,10 +34,10 @@ public class GameLogic {
 
     private final Set<UUID> teamOnePlayers = new HashSet<>();
     private int teamOneScore = 0;
-    private int targetScoreOne = TimeConvert.minuteToTick(15);
+    private int targetScoreOne = TimeConvert.m2t(15);
     private final Set<UUID> teamTwoPlayers = new HashSet<>();
     private int teamTwoScore = 0;
-    private int targetScoreTwo = TimeConvert.minuteToTick(15);
+    private int targetScoreTwo = TimeConvert.m2t(15);
 
     private final Set<UUID> readyPlayers = new HashSet<>();
     private final Map<UUID, Integer> teleporting = new HashMap<>();
@@ -50,6 +50,8 @@ public class GameLogic {
     }
 
     public void tickMaster() {
+        NetherRun.getIm().tickAllCooldowns();
+        NetherRun.getIm().fillAllInventories();
         checkSpawnTimers();
         if (gameActive) {
             if (roundActive) {
@@ -70,7 +72,7 @@ public class GameLogic {
                     ServerPlayerEntity p = server.getPlayerManager().getPlayer(uuid);
                     if (p != null && p != rp) {
                         p.teleport(pos.getX(), pos.getY(), pos.getZ(), false);
-                        spawnPlayerIn(uuid, pos, TimeConvert.secondToTick(5));
+                        spawnPlayerIn(uuid, pos, TimeConvert.s2t(5));
                     }
                 }
             }
@@ -91,7 +93,7 @@ public class GameLogic {
 
     public void tickRoundEachPlayer() {
         ServerPlayerEntity rp = (ServerPlayerEntity)runningPlayer();
-        if (currentRoundTime <= TimeConvert.minuteToTick(5)) {
+        if (currentRoundTime <= TimeConvert.m2t(5)) {
             rp.heal(0.02f);
         } else {
             rp.heal(0.01f);
@@ -140,7 +142,7 @@ public class GameLogic {
                 } else {
                     if (teleporting.get(uuid) % 20 == 0) {
                         if (p != null) {
-                            p.sendMessage(Text.translatable("msg.netherrun.spawning", TimeConvert.tickToSecond(teleporting.get(uuid))), true);
+                            p.sendMessage(Text.translatable("msg.netherrun.spawning", TimeConvert.t2s(teleporting.get(uuid))), true);
                         }
                     }
                     teleporting.put(uuid, teleporting.get(uuid) - 1);
@@ -173,7 +175,7 @@ public class GameLogic {
             if (runningPlayer() != null) {
                 ServerPlayerEntity sp = (ServerPlayerEntity) runningPlayer();
                 roundActive = true;
-                preGameTimer = TimeConvert.secondToTick(15);
+                preGameTimer = TimeConvert.s2t(15);
                 currentRoundTime = 0;
                 server.getPlayerManager().broadcast(Text.translatable("msg.netherrun.roundstart.success"), false);
                 int spawnX = new Random().nextInt(20000) - 10000;
@@ -260,6 +262,9 @@ public class GameLogic {
         return players;
     }
     public PlayerEntity runningPlayer() {
+        return server.getPlayerManager().getPlayer(runningPlayerID());
+    }
+    public UUID runningPlayerID() {
         UUID id = null;
         if (!balanced) {
             if (turn > teamOnePlayers.size()) {
@@ -274,7 +279,7 @@ public class GameLogic {
                 if (!teamOnePlayers.isEmpty()) id = teamOnePlayers.stream().toList().get((round % teamOnePlayers.size()) - 1);
             }
         }
-        return server.getPlayerManager().getPlayer(id);
+        return id;
     }
     public boolean isPlayingPlayer(UUID uuid) {
         return playingPlayers().contains(uuid);

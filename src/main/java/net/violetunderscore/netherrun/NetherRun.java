@@ -36,6 +36,7 @@ public class NetherRun implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             LOGGER.info("Loading GameLogic");
             game = new GameLogic(server);
+            im = new InventoryManagement(server);
         });
         ServerTickEvents.START_SERVER_TICK.register(server -> {
             game.tickMaster();
@@ -51,5 +52,9 @@ public class NetherRun implements ModInitializer {
 
     public static GameLogic getGame() {
         return game;
+    }
+
+    public static InventoryManagement getIm() {
+        return im;
     }
 }

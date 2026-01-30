@@ -2,6 +2,7 @@ package net.violetunderscore.netherrun.mixin;
 
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameMode;
@@ -17,8 +18,8 @@ public abstract class PlayerEntityMixin {
     @Inject(at = @At("HEAD"), method = "onDeath", cancellable = true)
     public void onDeath(DamageSource damageSource, CallbackInfo ci) {
         ServerPlayerEntity self = (ServerPlayerEntity)(Object)this;
-
-        if (self.getUuid().equals(NetherRun.getGame().runningPlayer().getUuid())) {
+        PlayerEntity rp = NetherRun.getGame().runningPlayer();
+        if (rp != null && self.getUuid().equals(rp.getUuid())) {
             self.setHealth(20);
             self.changeGameMode(GameMode.SPECTATOR);
             ci.cancel();

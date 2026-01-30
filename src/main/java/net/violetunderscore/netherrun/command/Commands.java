@@ -134,7 +134,7 @@ public class Commands {
                 .then(CommandManager.literal("spawnMe")
                     .executes(context -> {
                         if (context.getSource().getPlayer() != null) {
-                            NetherRun.getGame().spawnPlayerIn(context.getSource().getPlayer().getUuid(), context.getSource().getPlayer().getBlockPos(), TimeConvert.secondToTick(15));
+                            NetherRun.getGame().spawnPlayerIn(context.getSource().getPlayer().getUuid(), context.getSource().getPlayer().getBlockPos(), TimeConvert.s2t(15));
                         }
                         return 1;
                     })
