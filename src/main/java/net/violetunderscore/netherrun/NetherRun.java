@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.violetunderscore.netherrun.command.Commands;
 import net.violetunderscore.netherrun.game.GameLogic;
+import net.violetunderscore.netherrun.inventory.InventoryManagement;
 import net.violetunderscore.netherrun.network.NetherrunNetwork;
 import net.violetunderscore.netherrun.network.payloads.AllTimersPayload;
 import net.violetunderscore.netherrun.network.payloads.OneTimerPayload;
@@ -20,6 +21,7 @@ public class NetherRun implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static GameLogic game;
+    private static InventoryManagement im;
 
 	@Override
 	public void onInitialize() {
@@ -40,6 +42,10 @@ public class NetherRun implements ModInitializer {
         });
         ServerPlayerEvents.JOIN.register(p -> {
             game.onJoinServer(p);
+            im.createInventory(p.getUuid());
+        });
+        ServerPlayerEvents.LEAVE.register(p -> {
+            im.deleteInventory(p.getUuid());
         });
 	}
 
